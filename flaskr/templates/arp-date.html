@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>История MAC-адреса</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .input-field {
+            margin-bottom: 15px;
+        }
+        #data-table {
+            border-collapse: collapse;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            display: block;
+            border: 1px solid #ccc;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        .error-message {
+            color: red; /* Установить цвет текста на красный для сообщений об ошибках */
+            margin-bottom: 15px; /* Добавить немного пространства под сообщением об ошибке */
+        }
+    </style>
+</head>
+<body>
+
+    <h1>История MAC-адреса</h1>
+
+    <div class="input-field">
+        <label for="mac-address">Введите MAC-адрес:</label>
+        <input type="text" id="mac-address" placeholder="00:00:00:00:00:00" onkeyup="formatMacAddress()">
+    </div>
+<!-- 
+    <div class="input-field">
+        <label for="start-date">Дата начала:</label>
+        <input type="date" id="start-date">
+    </div>
+
+    <div class="input-field">
+        <label for="end-date">Дата окончания:</label>
+        <input type="date" id="end-date">
+    </div> -->
+
+    <canvas id="activityChart"></canvas>
+
+    <button onclick="loadData()">Загрузить данные</button>
+
+    <!-- Отображение сообщения об ошибке -->
+    <div id="error-message" class="error-message" style="display:none;"></div>
+
+   
+
+    <h2>Таблица данных</h2>
+    <div style="overflow-y:auto; max-height: 200px;">
+        <table id="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>MAC-адрес</th>
+                    <th>Дата</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <!-- Данные будут заполнены здесь -->
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function formatMacAddress() {
+            let input = document.getElementById('mac-address');
+            let value = input.value.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
+            if (value.length > 2) {
+                value = value.match(/.{1,2}/g).join(':');
+            }
+            input.value = value.slice(0, 17); // Ограничить длину MAC-адреса
+        }
+
+        function loadData() {
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            const errorMessageDiv = document.getElementById('error-message');
+
+            // Очистить предыдущее сообщение об ошибке
+            errorMessageDiv.style.display = 'none';
+            errorMessageDiv.textContent = '';
+
+            // Проверка диапазона дат
+            if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+                errorMessageDiv.textContent = "Дата начала не может быть позже даты окончания.";
+                errorMessageDiv.style.display = 'block'; // Показать сообщение об ошибке
+                return; // Выйти из функции, если проверка не прошла
+            }
+
+            // Симуляция загрузки данных из базы данных
+            const data = [
+                { id: 1, mac: 'AA:BB:CC:DD:EE:FF', date: '2024-10-10' },
+                { id: 2, mac: '11:22:33:44:55:66', date: '2024-10-09' },
+                { id: 3, mac: '77:88:99:AA:BB:CC', date: '2024-10-08' },
+            ];
+
+            const tableBody = document.getElementById('table-body');
+            tableBody.innerHTML = ''; // Очистить существующие данные
+
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${item.id}</td><td>${item.mac}</td><td>${item.date}</td>`;
+                tableBody.appendChild(row);
+            });
+        }
+
+        
+
+    </script>
+
+</body>
+</html>
