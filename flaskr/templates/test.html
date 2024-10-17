@@ -9,6 +9,32 @@
 <body>
     <h1>TEST</h1>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <form action="#" method="post">
+        <label for="mac-address">Введите MAC-адрес:</label>
+        <input type="text" id="mac-address" name="mac-address" placeholder="00:00:00:00:00:00" onkeyup="formatMacAddress()">
+        <input type="submit"/>
+    </form>
+
+    <script>
+       
+    </script>
+
+    <table>
+        <tr>
+          <th>Время обнаружения</th>
+          <th>MAC-адрес</th>
+          <th>IP-адрес</th>
+        </tr>
+        {% for event in events %}
+        <tr>
+          <td>{{event.event_time}}</td>
+          <td>{{event.mac_addr}}</td>
+          <td>{{event.switch_ip}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+
     <canvas id="activityChart"></canvas>
 </body>
 

@@ -36,23 +36,17 @@
     <h1>История MAC-адреса</h1>
 
     <div class="input-field">
-        <label for="mac-address">Введите MAC-адрес:</label>
-        <input type="text" id="mac-address" placeholder="00:00:00:00:00:00" onkeyup="formatMacAddress()">
-    </div>
-<!-- 
-    <div class="input-field">
-        <label for="start-date">Дата начала:</label>
-        <input type="date" id="start-date">
+        <form>
+            <label for="mac-address">Введите MAC-адрес:</label>
+            <input type="text" id="mac-address" placeholder="00:00:00:00:00:00" onkeyup="formatMacAddress()">
+            <input type="submit"/>
+        </form>
     </div>
 
-    <div class="input-field">
-        <label for="end-date">Дата окончания:</label>
-        <input type="date" id="end-date">
-    </div> -->
 
-    <canvas id="activityChart"></canvas>
+    <!-- <canvas id="activityChart"></canvas> -->
 
-    <button onclick="loadData()">Загрузить данные</button>
+   
 
     <!-- Отображение сообщения об ошибке -->
     <div id="error-message" class="error-message" style="display:none;"></div>
