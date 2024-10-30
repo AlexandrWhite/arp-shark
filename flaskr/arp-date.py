@@ -19,7 +19,6 @@ db = SQLAlchemy(app)
 
 @app.route('/mac_history', methods=['POST'])
 def mac_history():
-    print(request)
     data = request.get_json()
     mac_address = data.get('mac-address')
 
@@ -27,10 +26,17 @@ def mac_history():
     query = text(query)
     result = db.session.execute(query)
     json_result = json.dumps([ row._asdict() for row in result ], sort_keys=True, default=str)
-
     return jsonify(json_result),200
 
+@app.route('/mac_table', methods=['POST'])
+def mac_table():
+    mac_address = request.form['mac-address']
 
+    query = f"SELECT event_time, INET_NTOA(switch_ip) as switch_ip, mac_addr, port_name FROM event where mac_addr='{mac_address}'"
+    query = text(query)
+    result = db.session.execute(query)
+    print(result)
+    return render_template('test.html', events=result)
 
 
 @app.route('/')

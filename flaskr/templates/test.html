@@ -11,22 +11,38 @@
 </head>
 
 <body>
-    <h1>TEST</h1>
-    <form action="#" method="post">
+    <form action="/mac_table" method="post">
         <label for="mac-address">Введите MAC-адрес:</label>
         <input type="text" id="mac-address_input" name="mac-address" placeholder="00:00:00:00:00:00" onkeyup="formatMacAddress()">
-        <!-- <input type="submit"/> -->
+        <input type="submit"/>
     </form>
     <button onclick="sendRequest()">Найти</button>
     
 
     <p id="result"></p>
     <p id="dates"></p>
-    <canvas id="calendarChart"/>
+
+
+    <table>
+      <tr>
+        <th>Время обнаружения</th>
+        <th>MAC-адрес</th>
+        <th>IP-адрес</th>
+        <th>Имя порта</th>
+      </tr>
+      {% for event in events %}
+      <tr>
+        <td>{{event.event_time}}</td>
+        <td>{{event.mac_addr}}</td>
+        <td>{{event.switch_ip}}</td>
+        <td>{{event.port_name}}</td>
+      </tr>
+      {% endfor %}
+    </table>
 
     <script>
       function formatMacAddress() {
-          let input = document.getElementById('mac-address');
+          let input = document.getElementById('mac-address_input');
           let value = input.value.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
           if (value.length > 2) {
               value = value.match(/.{1,2}/g).join(':');
@@ -53,7 +69,7 @@
         })
         .then(data=>{
           console.log(data);
-          document.getElementById('result').textContent = JSON.parse(data); 
+          document.getElementById('result').textContent = JSON.stringify(data); 
           visulize_dates(JSON.parse(data));
         });
       }
@@ -67,159 +83,159 @@
         }, {});
       }
 
-      function isoDayOfWeek(dt) {
-        let wd = dt.getDay(); // 0..6, from sunday
-        wd = (wd + 6) % 7 + 1; // 1..7 from monday
-        return '' + wd; // string so it gets parsed
-      }
+      // function isoDayOfWeek(dt) {
+      //   let wd = dt.getDay(); // 0..6, from sunday
+      //   wd = (wd + 6) % 7 + 1; // 1..7 from monday
+      //   return '' + wd; // string so it gets parsed
+      // }
 
 
-      function visulize_dates(data){
+      // function visulize_dates(data){
 
-        //Выберем только дни из полученных данных
-        dates = []
-        data.forEach((element) => {
-          date = new Date(Date.parse(element['event_time']));
-          date.setHours(0,0,0,0);
-          dates.push(date);
-        });
+      //   //Выберем только дни из полученных данных
+      //   dates = []
+      //   data.forEach((element) => {
+      //     date = new Date(Date.parse(element['event_time']));
+      //     date.setHours(0,0,0,0);
+      //     dates.push(date);
+      //   });
 
-        vc = valueCounts(dates); //посчитаем сколько раз в день появлялся MAC
+      //   vc = valueCounts(dates); //посчитаем сколько раз в день появлялся MAC
         
-        //Введем данные для графика
-        chart_data = []
-        for (const date in vc) {
-          iso = new Date(date).toISOString().substr(0,10);
-          chart_data.push({
-            x:iso,
-            y:isoDayOfWeek(new Date(date)),
-            d:iso,
-            v:vc[date]
-          });
-        }
-      }
+      //   //Введем данные для графика
+      //   chart_data = []
+      //   for (const date in vc) {
+      //     iso = new Date(date).toISOString().substr(0,10);
+      //     chart_data.push({
+      //       x:iso,
+      //       y:isoDayOfWeek(new Date(date)),
+      //       d:iso,
+      //       v:vc[date]
+      //     });
+      //   }
+      // }
 
 
 
-      const scales = {
-        y: {
-          type: 'time',
-          offset: true,
-          time: {
-            unit: 'day',
-            round: 'day',
-            isoWeekday: 1,
-            parser: 'i',
-            displayFormats: {
-              day: 'iiiiii'
-            }
-          },
-          reverse: true,
-          position: 'right',
-          ticks: {
-            maxRotation: 0,
-            autoSkip: true,
-            padding: 1,
-            font: {
-              size: 9
-            }
-          },
-          grid: {
-            display: false,
-            drawBorder: false,
-            tickLength: 0
-          }
-        },
-        x: {
-          type: 'time',
-          position: 'bottom',
-          offset: true,
-          time: {
-            unit: 'week',
-            round: 'week',
-            isoWeekday: 1,
-            displayFormats: {
-              week: 'MMM dd'
-            }
-          },
-          ticks: {
-            maxRotation: 0,
-            autoSkip: true,
-            font: {
-              size: 9
-            }
-          },
-          grid: {
-            display: false,
-            drawBorder: false,
-            tickLength: 0,
-          }
-        }
-      };
+      // const scales = {
+      //   y: {
+      //     type: 'time',
+      //     offset: true,
+      //     time: {
+      //       unit: 'day',
+      //       round: 'day',
+      //       isoWeekday: 1,
+      //       parser: 'i',
+      //       displayFormats: {
+      //         day: 'iiiiii'
+      //       }
+      //     },
+      //     reverse: true,
+      //     position: 'right',
+      //     ticks: {
+      //       maxRotation: 0,
+      //       autoSkip: true,
+      //       padding: 1,
+      //       font: {
+      //         size: 9
+      //       }
+      //     },
+      //     grid: {
+      //       display: false,
+      //       drawBorder: false,
+      //       tickLength: 0
+      //     }
+      //   },
+      //   x: {
+      //     type: 'time',
+      //     position: 'bottom',
+      //     offset: true,
+      //     time: {
+      //       unit: 'week',
+      //       round: 'week',
+      //       isoWeekday: 1,
+      //       displayFormats: {
+      //         week: 'MMM dd'
+      //       }
+      //     },
+      //     ticks: {
+      //       maxRotation: 0,
+      //       autoSkip: true,
+      //       font: {
+      //         size: 9
+      //       }
+      //     },
+      //     grid: {
+      //       display: false,
+      //       drawBorder: false,
+      //       tickLength: 0,
+      //     }
+      //   }
+      // };
 
-      const options = {
-        aspectRatio: 5,
-        plugins: {
-          legend: false,
-          tooltip: {
-            displayColors: false,
-            callbacks: {
-              title() {
-                return '';
-              },
-              label(context) {
-                const v = context.dataset.data[context.dataIndex];
-                return ['d: ' + v.d, 'v: ' + v.v.toFixed(2)];
-              }
-            }
-          },
-        },
-        scales: scales,
-        layout: {
-          padding: {
-            top: 10
-          }
-        }
-      };
+      // const options = {
+      //   aspectRatio: 5,
+      //   plugins: {
+      //     legend: false,
+      //     tooltip: {
+      //       displayColors: false,
+      //       callbacks: {
+      //         title() {
+      //           return '';
+      //         },
+      //         label(context) {
+      //           const v = context.dataset.data[context.dataIndex];
+      //           return ['d: ' + v.d, 'v: ' + v.v.toFixed(2)];
+      //         }
+      //       }
+      //     },
+      //   },
+      //   scales: scales,
+      //   layout: {
+      //     padding: {
+      //       top: 10
+      //     }
+      //   }
+      // };
 
-      const data = {
-        datasets: [{
-          label: 'My Matrix',
-          data: chart_data,
-          backgroundColor(c) {
-            const value = c.dataset.data[c.dataIndex].v;
-            const alpha = (10 + value) / 60;
-            return helpers.color('green').alpha(alpha).rgbString();
-          },
-          borderColor(c) {
-            const value = c.dataset.data[c.dataIndex].v;
-            const alpha = (10 + value) / 60;
-            return helpers.color('green').alpha(alpha).darken(0.3).rgbString();
-          },
-          borderWidth: 1,
-          hoverBackgroundColor: 'yellow',
-          hoverBorderColor: 'yellowgreen',
-          width(c) {
-            const a = c.chart.chartArea || {};
-            return (a.right - a.left) / 53 - 1;
-          },
-          height(c) {
-            const a = c.chart.chartArea || {};
-            return (a.bottom - a.top) / 7 - 1;
-          }
-        }]
-      };
+      // const data = {
+      //   datasets: [{
+      //     label: 'My Matrix',
+      //     data: chart_data,
+      //     backgroundColor(c) {
+      //       const value = c.dataset.data[c.dataIndex].v;
+      //       const alpha = (10 + value) / 60;
+      //       return helpers.color('green').alpha(alpha).rgbString();
+      //     },
+      //     borderColor(c) {
+      //       const value = c.dataset.data[c.dataIndex].v;
+      //       const alpha = (10 + value) / 60;
+      //       return helpers.color('green').alpha(alpha).darken(0.3).rgbString();
+      //     },
+      //     borderWidth: 1,
+      //     hoverBackgroundColor: 'yellow',
+      //     hoverBorderColor: 'yellowgreen',
+      //     width(c) {
+      //       const a = c.chart.chartArea || {};
+      //       return (a.right - a.left) / 53 - 1;
+      //     },
+      //     height(c) {
+      //       const a = c.chart.chartArea || {};
+      //       return (a.bottom - a.top) / 7 - 1;
+      //     }
+      //   }]
+      // };
 
-      const config = {
-        type: 'matrix',
-        data: data,
-        options: options
-      };
+      // const config = {
+      //   type: 'matrix',
+      //   data: data,
+      //   options: options
+      // };
 
       
 
-      const ctx = document.getElementById('calendarChart');
-      new Chart(ctx,config);
+      // const ctx = document.getElementById('calendarChart');
+      // new Chart(ctx,config);
 
 
 
@@ -229,20 +245,7 @@
 
 
 
-    <table>
-        <tr>
-          <th>Время обнаружения</th>
-          <th>MAC-адрес</th>
-          <th>IP-адрес</th>
-        </tr>
-        {% for event in events %}
-        <tr>
-          <td>{{event.event_time}}</td>
-          <td>{{event.mac_addr}}</td>
-          <td>{{event.switch_ip}}</td>
-        </tr>
-        {% endfor %}
-    </table>
+
 
 
     <canvas id="activityChart"></canvas>
