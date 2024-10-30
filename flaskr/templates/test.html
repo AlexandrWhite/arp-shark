@@ -4,20 +4,230 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>История MAC-адреса</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js/utils"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.1"></script>
 </head>
 
 <body>
     <h1>TEST</h1>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <form action="#" method="post">
         <label for="mac-address">Введите MAC-адрес:</label>
-        <input type="text" id="mac-address" name="mac-address" placeholder="00:00:00:00:00:00" onkeyup="formatMacAddress()">
-        <input type="submit"/>
+        <input type="text" id="mac-address_input" name="mac-address" placeholder="00:00:00:00:00:00" onkeyup="formatMacAddress()">
+        <!-- <input type="submit"/> -->
     </form>
+    <button onclick="sendRequest()">Найти</button>
+    
+
+    <p id="result"></p>
+    <p id="dates"></p>
+    <canvas id="calendarChart"/>
 
     <script>
-       
+      function formatMacAddress() {
+          let input = document.getElementById('mac-address');
+          let value = input.value.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
+          if (value.length > 2) {
+              value = value.match(/.{1,2}/g).join(':');
+          }
+          input.value = value.slice(0, 17); // Ограничить длину MAC-адреса
+      }
+
+      function sendRequest(){
+        //Спросим у базы данных какая есть информация по нужному MAC
+
+        const inputData = document.getElementById('mac-address_input').value;
+        const options = {
+          method: 'POST', 
+          headers: {
+              'Content-Type': 'application/json' 
+          },
+          body: JSON.stringify({ 'mac-address': inputData }) 
+        };
+        fetch('/mac_history',options).then(response=>{
+          if(!response.ok){
+            throw new Error(`${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data=>{
+          console.log(data);
+          document.getElementById('result').textContent = JSON.parse(data); 
+          visulize_dates(JSON.parse(data));
+        });
+      }
+
+      function valueCounts(arr) {
+        //принимает массив arr
+        //возвращает массив пар (элемент массива arr, сколько раз встречался в массиве arr)
+        return arr.reduce((acc, value) => {
+            acc[value] = (acc[value] || 0) + 1;
+            return acc;
+        }, {});
+      }
+
+      function isoDayOfWeek(dt) {
+        let wd = dt.getDay(); // 0..6, from sunday
+        wd = (wd + 6) % 7 + 1; // 1..7 from monday
+        return '' + wd; // string so it gets parsed
+      }
+
+
+      function visulize_dates(data){
+
+        //Выберем только дни из полученных данных
+        dates = []
+        data.forEach((element) => {
+          date = new Date(Date.parse(element['event_time']));
+          date.setHours(0,0,0,0);
+          dates.push(date);
+        });
+
+        vc = valueCounts(dates); //посчитаем сколько раз в день появлялся MAC
+        
+        //Введем данные для графика
+        chart_data = []
+        for (const date in vc) {
+          iso = new Date(date).toISOString().substr(0,10);
+          chart_data.push({
+            x:iso,
+            y:isoDayOfWeek(new Date(date)),
+            d:iso,
+            v:vc[date]
+          });
+        }
+      }
+
+
+
+      const scales = {
+        y: {
+          type: 'time',
+          offset: true,
+          time: {
+            unit: 'day',
+            round: 'day',
+            isoWeekday: 1,
+            parser: 'i',
+            displayFormats: {
+              day: 'iiiiii'
+            }
+          },
+          reverse: true,
+          position: 'right',
+          ticks: {
+            maxRotation: 0,
+            autoSkip: true,
+            padding: 1,
+            font: {
+              size: 9
+            }
+          },
+          grid: {
+            display: false,
+            drawBorder: false,
+            tickLength: 0
+          }
+        },
+        x: {
+          type: 'time',
+          position: 'bottom',
+          offset: true,
+          time: {
+            unit: 'week',
+            round: 'week',
+            isoWeekday: 1,
+            displayFormats: {
+              week: 'MMM dd'
+            }
+          },
+          ticks: {
+            maxRotation: 0,
+            autoSkip: true,
+            font: {
+              size: 9
+            }
+          },
+          grid: {
+            display: false,
+            drawBorder: false,
+            tickLength: 0,
+          }
+        }
+      };
+
+      const options = {
+        aspectRatio: 5,
+        plugins: {
+          legend: false,
+          tooltip: {
+            displayColors: false,
+            callbacks: {
+              title() {
+                return '';
+              },
+              label(context) {
+                const v = context.dataset.data[context.dataIndex];
+                return ['d: ' + v.d, 'v: ' + v.v.toFixed(2)];
+              }
+            }
+          },
+        },
+        scales: scales,
+        layout: {
+          padding: {
+            top: 10
+          }
+        }
+      };
+
+      const data = {
+        datasets: [{
+          label: 'My Matrix',
+          data: chart_data,
+          backgroundColor(c) {
+            const value = c.dataset.data[c.dataIndex].v;
+            const alpha = (10 + value) / 60;
+            return helpers.color('green').alpha(alpha).rgbString();
+          },
+          borderColor(c) {
+            const value = c.dataset.data[c.dataIndex].v;
+            const alpha = (10 + value) / 60;
+            return helpers.color('green').alpha(alpha).darken(0.3).rgbString();
+          },
+          borderWidth: 1,
+          hoverBackgroundColor: 'yellow',
+          hoverBorderColor: 'yellowgreen',
+          width(c) {
+            const a = c.chart.chartArea || {};
+            return (a.right - a.left) / 53 - 1;
+          },
+          height(c) {
+            const a = c.chart.chartArea || {};
+            return (a.bottom - a.top) / 7 - 1;
+          }
+        }]
+      };
+
+      const config = {
+        type: 'matrix',
+        data: data,
+        options: options
+      };
+
+      
+
+      const ctx = document.getElementById('calendarChart');
+      new Chart(ctx,config);
+
+
+
+
+            
     </script>
+
+
 
     <table>
         <tr>
