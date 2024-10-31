@@ -16,26 +16,25 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
-
-@app.route('/mac_history', methods=['POST'])
-def mac_history():
-    data = request.get_json()
-    mac_address = data.get('mac-address')
-
+def get_data(mac_address):
     query = f"SELECT event_time, INET_NTOA(switch_ip) as switch_ip, mac_addr FROM event where mac_addr='{mac_address}'"
     query = text(query)
     result = db.session.execute(query)
+    return result
+
+
+@app.route('/mac_json', methods=['POST'])
+def mac_history():
+    data = request.get_json()
+    mac_address = data.get('mac-address')
+    result = get_data(mac_address)
     json_result = json.dumps([ row._asdict() for row in result ], sort_keys=True, default=str)
     return jsonify(json_result),200
 
 @app.route('/mac_table', methods=['POST'])
 def mac_table():
     mac_address = request.form['mac-address']
-
-    query = f"SELECT event_time, INET_NTOA(switch_ip) as switch_ip, mac_addr, port_name FROM event where mac_addr='{mac_address}'"
-    query = text(query)
-    result = db.session.execute(query)
-    print(result)
+    result = get_data(mac_address)
     return render_template('test.html', events=result)
 
 
