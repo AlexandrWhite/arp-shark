@@ -16,29 +16,49 @@
         <input type="text" id="mac-address_input" name="mac-address" placeholder="00:00:00:00:00:00" onkeyup="formatMacAddress()">
         <input type="submit" value="Найти"/>
     </form>
-    <button onclick="sendRequest()">Найти</button>
+    <!-- <button onclick="sendRequest()">Найти</button> -->
     
 
     <p id="result"></p>
     <p id="dates"></p>
 
+    <div style="display: flex;">
+      <div style="flex: 1;">
+        <table border="1">
+          <tr>
+            <th>Время обнаружения</th>
+            <th>MAC-адрес</th>
+            <!-- <th>IP-адрес</th> -->
+            <!-- <th>Имя порта</th> -->
+            <th>ID Операции</th>
+          </tr>
+          {% for event in events %}
+          <tr>
+            <td>{{event.event_time}}</td>
+            <td>{{event.mac_addr}}</td>
+            <td>{{event.switch_ip}}</td>
+            <!-- <td>{{event.port_name}}</td> -->
+            <td>{{event.oper_id}}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
 
-    <table>
-      <tr>
-        <th>Время обнаружения</th>
-        <th>MAC-адрес</th>
-        <th>IP-адрес</th>
-        <th>Имя порта</th>
-      </tr>
-      {% for event in events %}
-      <tr>
-        <td>{{event.event_time}}</td>
-        <td>{{event.mac_addr}}</td>
-        <td>{{event.switch_ip}}</td>
-        <td>{{event.port_name}}</td>
-      </tr>
-      {% endfor %}
-    </table>
+      <div style="flex: 1;">
+        <table border="1">
+          <tr>
+            <th>Время начала</th>
+            <th>Время конца</th>
+          </tr>
+          {% for interval in intervals %}
+          <tr>
+            <td>{{interval.start}}</td>
+            <td>{{interval.finish}}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
 
     <script>
       function formatMacAddress() {
