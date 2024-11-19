@@ -5,18 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>История MAC-адреса</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js/utils"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.1"></script> -->
+    <script src="{{ url_for('static', filename='js/arp-date.js') }}"></script>
 </head>
 
 <body>
-    <form action="/mac_table" method="post">
+    <form action="/mac_table" id="mac_table_form" method="post">
         <label for="mac-address">Введите MAC-адрес:</label>
         <input type="text" id="mac-address_input" name="mac-address" placeholder="00:00:00:00:00:00" onkeyup="formatMacAddress()">
         <input type="text" id="period-unit_input" name="period-unit" placeholder="1" value="1">
 
-        <select name="period" id="period-names">     
+        <select name="period-names" id="period-names">     
           <option value="days">Дней</option>
           <option value="hours">Часов</option>
           <option value="months">Месяцев</option>
