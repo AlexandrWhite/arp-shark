@@ -16,11 +16,25 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
-def get_data(mac_address):
-    query = f"SELECT event_time, INET_NTOA(switch_ip) as switch_ip, mac_addr, oper_id FROM event where mac_addr='{mac_address}'"
+def get_data(mac_address, period_name, period_value):
+    query = f'SELECT event_time, INET_NTOA(switch_ip) as switch_ip, mac_addr, \
+        port_name, oper_id, vlan_id FROM event where mac_addr=\'{mac_address}\''
+    if period_name == 'days':
+        query += f'and event_time >= NOW() - INTERVAL {period_value} DAY'
+    if period_name == 'months':
+        query += f'and event_time >= NOW() - INTERVAL {period_value} MONTH'
+    if period_name == 'hours':
+        query += f'and event_time >= NOW() - INTERVAL {period_value} HOUR'
     query = text(query)
     result = db.session.execute(query)
     return result
+
+
+def solve_open_conflicts(data):
+    pass 
+def clear_data(data):
+    data = solve_open_conflicts(data)
+
 
 def get_intervals(mac_address):
     query = f"""
@@ -56,7 +70,10 @@ def mac_history():
 @app.route('/mac_table', methods=['POST'])
 def mac_table():
     mac_address = request.form['mac-address']
-    result = get_data(mac_address)
+    period_value = request.form['period-unit']
+    period_name = request.form['period']
+
+    result = get_data(mac_address,period_name,period_value)
     intervals = get_intervals(mac_address)
     return render_template('test.html', events=result,intervals = intervals)
 
