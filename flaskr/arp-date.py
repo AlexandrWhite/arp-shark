@@ -71,7 +71,7 @@ def mac_history():
 def mac_table():
     mac_address = request.form['mac-address']
     period_value = request.form['period-unit']
-    period_name = request.form['period']
+    period_name = request.form['period-names']
 
     result = get_data(mac_address,period_name,period_value)
     intervals = get_intervals(mac_address)
