@@ -25,6 +25,7 @@ def get_data(mac_address, period_name, period_value):
         query += f'and event_time >= NOW() - INTERVAL {period_value} MONTH'
     if period_name == 'hours':
         query += f'and event_time >= NOW() - INTERVAL {period_value} HOUR'
+    query += ' ORDER BY event_time DESC'; 
     query = text(query)
     result = db.session.execute(query)
     return result

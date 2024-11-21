@@ -19,6 +19,5 @@ window.onload = function(){
         localStorage.setItem('mac',mac_input.value);
         localStorage.setItem('period_name',period_name_input.value);
         localStorage.setItem('period_unit',period_unit_input.value);
-        console.log(document.getElementById('mac-address_input').value);
     })
 };
