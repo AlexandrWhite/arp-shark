@@ -4,118 +4,121 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>История MAC-адреса</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        .input-field {
-            margin-bottom: 15px;
-        }
-        #data-table {
-            border-collapse: collapse;
-            width: 100%;
-            max-height: 200px;
-            overflow-y: auto;
-            display: block;
-            border: 1px solid #ccc;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-        }
-        .error-message {
-            color: red; /* Установить цвет текста на красный для сообщений об ошибках */
-            margin-bottom: 15px; /* Добавить немного пространства под сообщением об ошибке */
-        }
-    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/arp-date.css') }}">
+    <script src="{{ url_for('static', filename='js/arp-date.js') }}"></script>
+
+    
 </head>
+
 <body>
+    <form action="/mac_table" id="mac_table_form" method="post">
+        <label for="mac-address">Введите MAC-адрес:</label>
+        <input type="text" id="mac-address_input" name="mac-address" placeholder="00:00:00:00:00:00" onkeyup="formatMacAddress()">
+        <input type="text" id="period-unit_input" name="period-unit" placeholder="1" value="1">
 
-    <h1>История MAC-адреса</h1>
+        <select name="period-names" id="period-names">     
+          <option value="days">Дней</option>
+          <option value="hours">Часов</option>
+          <option value="months">Месяцев</option>
+          
+        </select>
 
-    <div class="input-field">
-        <form>
-            <label for="mac-address">Введите MAC-адрес:</label>
-            <input type="text" id="mac-address" placeholder="00:00:00:00:00:00" onkeyup="formatMacAddress()">
-            <input type="submit"/>
-        </form>
-    </div>
+        <input type="submit" value="Найти"/>
+
+    </form>
+    <!-- <button onclick="sendRequest()">Найти</button> -->
+    
 
 
-    <!-- <canvas id="activityChart"></canvas> -->
 
-   
+    <p id="result"></p>
+    <p id="dates"></p>
 
-    <!-- Отображение сообщения об ошибке -->
-    <div id="error-message" class="error-message" style="display:none;"></div>
-
-   
-
-    <h2>Таблица данных</h2>
-    <div style="overflow-y:auto; max-height: 200px;">
-        <table id="data-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>MAC-адрес</th>
-                    <th>Дата</th>
-                </tr>
-            </thead>
-            <tbody id="table-body">
-                <!-- Данные будут заполнены здесь -->
-            </tbody>
+    <div style="display: flex;">
+      <div style="flex: 1;">
+        <table class="hoverTable">
+          <tr>
+            <th>Время обнаружения (день-месяц-год)</th>
+            <!-- <th>MAC-адрес</th> -->
+            <th>IP-адрес (коммутатора)</th>
+            <th>Порт</th>
+            <th>Порт ID</th>
+            <th>VlanID</th>
+            <th>ID Операции</th>
+          </tr>
+          {% for event in events %}
+          <tr>
+            <td>{{event.event_time}}</td>
+            <!-- <td>{{event.mac_addr}}</td> -->
+            <td>{{event.switch_ip}}</td>
+            <td>{{event.port_name}}</td>
+            <td>{{event.port_id}}</td>
+            <td>{{event.vlan_id}}</td>
+            <td>{{event.oper_id}}</td>
+           
+          </tr>
+          {% endfor %}
         </table>
-    </div>
+      </div>
+<!-- 
+      <div style="flex: 1;">
+        <table border="1">
+          <tr>
+            <th>Время начала</th>
+            <th>Время конца</th>
+          </tr>
+          {% for interval in intervals %}
+          <tr>
+            <td>{{interval.start}}</td>
+            <td>{{interval.finish}}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div> -->
 
-    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
-    <!-- <script>
-        function formatMacAddress() {
-            let input = document.getElementById('mac-address');
-            let value = input.value.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
-            if (value.length > 2) {
-                value = value.match(/.{1,2}/g).join(':');
-            }
-            input.value = value.slice(0, 17); // Ограничить длину MAC-адреса
-        }
+    
 
-        function loadData() {
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
-            const errorMessageDiv = document.getElementById('error-message');
 
-            // Очистить предыдущее сообщение об ошибке
-            errorMessageDiv.style.display = 'none';
-            errorMessageDiv.textContent = '';
 
-            // Проверка диапазона дат
-            if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
-                errorMessageDiv.textContent = "Дата начала не может быть позже даты окончания.";
-                errorMessageDiv.style.display = 'block'; // Показать сообщение об ошибке
-                return; // Выйти из функции, если проверка не прошла
-            }
 
-            // Симуляция загрузки данных из базы данных
-            const data = [
-                { id: 1, mac: 'AA:BB:CC:DD:EE:FF', date: '2024-10-10' },
-                { id: 2, mac: '11:22:33:44:55:66', date: '2024-10-09' },
-                { id: 3, mac: '77:88:99:AA:BB:CC', date: '2024-10-08' },
-            ];
-
-            const tableBody = document.getElementById('table-body');
-            tableBody.innerHTML = ''; // Очистить существующие данные
-
-            data.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td>${item.id}</td><td>${item.mac}</td><td>${item.date}</td>`;
-                tableBody.appendChild(row);
-            });
-        }
-
-        
-
-    </script> -->
-
+    
+    <canvas id="activityChart"></canvas>
 </body>
+
+<script>
+  function formatMacAddress() {
+      let input = document.getElementById('mac-address_input');
+      let value = input.value.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
+      if (value.length > 2) {
+          value = value.match(/.{1,2}/g).join(':');
+      }
+      input.value = value.slice(0, 17); // Ограничить длину MAC-адреса
+  }
+
+  function sendRequest(){
+    //Спросим у базы данных какая есть информация по нужному MAC
+
+    const inputData = document.getElementById('mac-address_input').value;
+    const options = {
+      method: 'POST', 
+      headers: {
+          'Content-Type': 'application/json' 
+      },
+      body: JSON.stringify({ 'mac-address': inputData }) 
+    };
+    fetch('/mac_json',options).then(response=>{
+      if(!response.ok){
+        throw new Error(`${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data=>{
+      console.log(data);
+      document.getElementById('result').textContent = JSON.stringify(data); 
+      visulize_dates(JSON.parse(data));
+    });
+  }       
+</script>
 </html>
